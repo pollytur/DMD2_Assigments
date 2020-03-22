@@ -1,0 +1,8 @@
+MATCH (rent:Rental)
+WITH max(rent.rental_date.year) AS data
+MATCH (c:Customer)-[:CUSTOMER_RENTS]-(r:Rental{})-[:RENTAL_PROVIDES_INVENTORY]-(i:Inventory)-[:INVENTORY_FILM]-(f:Film)-[:FILM_CATEGORY]-(cat:Category)
+WHERE r.rental_date.year = data
+WITH collect(DISTINCT cat) AS categories, c AS c
+WHERE size(categories)>1
+RETURN c.customer_id AS ID, c.first_name AS NAME, c.last_name AS SURNAME, size(categories) AS DIFFERENT_CATEGORIES
+ORDER BY DIFFERENT_CATEGORIES DESC, ID
