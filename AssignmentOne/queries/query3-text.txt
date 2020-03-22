@@ -1,0 +1,3 @@
+MATCH (c:Category)-[:FILM_CATEGORY]-(f:Film)-[:INVENTORY_FILM]->(i:Inventory)-[:RENTAL_PROVIDES_INVENTORY]-(r:Rental)
+RETURN f.film_id AS FILM_ID, f.title AS TITLE, f.description AS DESCRIPTION, f.release_year AS YEAR, c.category_id AS CATEGORY_ID, c.name AS CATEGORY, count(r) AS NUMBER_OF_RENTS
+ORDER BY NUMBER_OF_RENTS DESC, FILM_ID

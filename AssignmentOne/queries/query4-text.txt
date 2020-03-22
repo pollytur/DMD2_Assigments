@@ -1,0 +1,27 @@
+MATCH (c:Customer {customer_id:7})-[:CUSTOMER_RENTS]-(r:Rental)-[:RENTAL_PROVIDES_INVENTORY]-(i:Inventory)-[:INVENTORY_FILM]-(f:Film) WITH collect(f.film_id) AS analyzedCust 
+MATCH (c:Customer )-[:CUSTOMER_RENTS]-(r:Rental)-[:RENTAL_PROVIDES_INVENTORY]-(i:Inventory)-[:INVENTORY_FILM]-(f:Film) 
+// <> is not equal
+WHERE c.customer_id <>2
+WITH c, collect(f.film_id) AS otherCust, analyzedCust
+WITH collect(otherCust) AS otherCusts, analyzedCust
+UNWIND otherCusts AS other
+UNWIND analyzedCust AS cust
+WITH other, cust, analyzedCust
+WHERE cust IN other WITH other, count(cust) AS coincidence, analyzedCust
+WITH collect(other) AS others, collect(coincidence) AS coin, analyzedCust
+MATCH (f:Film) WITH collect(f.film_id) AS films, coin, analyzedCust, others
+WITH films, coin, analyzedCust, others, range(0, size(films)) AS len
+UNWIND len AS l
+UNWIND others AS other
+WITH l, other, size(other) AS curlen, coin, films, len
+WHERE films[l] IN other 
+WITH films[l] AS f, collect(toFloat(coin[l])/toFloat(curlen)*100) AS score
+WITH f,reduce(val=0.0, a IN score|val+a) AS sc
+MATCH (c:Customer) 
+WITH count(c) AS custNum , f, sc
+MATCH (fm:Film) WHERE fm.film_id=f
+// to return the whole film node
+//RETURN fm AS NODA, round(sc/toFloat(custNum )*100)/100  AS SCORE
+// to return beautiful output for csv
+RETURN fm.film_id AS FILM_ID,fm.title AS TITLE, fm.description AS DESCRIPTION, fm.release_year AS YEAR, fm.length AS LENGTH, round(sc/toFloat(custNum )*100)/100  AS RECCOMENDATION_SCORE
+ORDER BY sc desc

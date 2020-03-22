@@ -1,0 +1,4 @@
+MATCH (actorFrom:Actor { actor_id: 1 }),(actorTo:Actor ), path = shortestPath((actorFrom)-[:FILM_ACTOR*]-(actorTo))
+WHERE (not (actorTo.actor_id =1))
+RETURN actorTo.actor_id AS ID, actorTo.first_name as NAME, actorTo.last_name AS SURNAME, length(path)/2-1 as DEGREE_OF_SEPARATION
+ORDER BY DEGREE_OF_SEPARATION DESC, NAME, SURNAME
